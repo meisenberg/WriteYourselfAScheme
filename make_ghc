@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ "$#" -ne 2 ]; then
+    echo "Usage: <source file> <dest file>"
+    exit 1
+fi
+obj_dir='obj'
+bin_dir='bin'
+rm -rf $obj_dir \
+    && rm -rf $bin_dir \
+    && mkdir $obj_dir \
+    && mkdir $bin_dir \
+    && ghc -odir $obj_dir -hidir $obj_dir -o $bin_dir/$2 --make $1
