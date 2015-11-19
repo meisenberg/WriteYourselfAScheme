@@ -104,14 +104,34 @@ parseLongChar = do
                   x <- (string "space" <|> string "newline")
                   case x of 
                    "space" -> return $ Character ' '
-                   "newline" -> return $ Character '\n'
-     
+                   "newline" -> return $ Character '\n'     
+
+
+parseList :: Parser LispVal
+parseList = liftM List $ sepBy parseExpr spaces
+
+parseDottedList :: Parser LispVal
+parseDottedList = do
+    head <- endBy parseExpr spaces
+    tail <- char '.' >> spaces >> parseExpr
+    return $ DottedList head tail
+
+parseQuoted :: Parser LispVal
+parseQuoted = do
+    char '\''
+    x <- parseExpr
+    return $ List [Atom "quote", x]
+         
 parseExpr :: Parser LispVal
-parseExpr = parseAtom 
-        <|> parseNumber
-        <|> parseString
-        <|> parseCharacter
-        
+parseExpr = parseAtom
+         <|> parseString
+         <|> parseNumber
+         <|> parseQuoted
+         <|> do char '('
+                x <- try parseList <|> parseDottedList
+                char ')'
+                return x
+                            
 parserRunner :: Show a => Parser a -> String -> String -> String
 parserRunner parser label input = case parse parser label input of
         Left err -> "No match: " ++ show err
