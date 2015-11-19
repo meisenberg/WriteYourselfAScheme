@@ -5,6 +5,7 @@ import System.Environment
 import Control.Monad
 import Numeric
 
+
 data LispVal = Atom String
         | List [LispVal]
         | DottedList [LispVal] LispVal
@@ -48,35 +49,48 @@ parseAtom = do
                     "#t" -> Bool True
                     "#f" -> Bool False
                     _    -> Atom atom
+
+arrayToString = \x -> concat(map(show)(x))
                          
---  parseNumber :: Parser LispVal
---  parseNumber = liftM (Number . read) $ many1 digit 
- 
-parseHex :: Parser LispVal
-parseHex = do
+binDigits = arrayToString [0, 1]
+octalDigits = arrayToString [0..7]
+decDigits = arrayToString [0..9]
+hexDigits = decDigits ++ ['a'..'f']
+
+parseNumPrefix :: Parser Integer
+parseNumPrefix = do
             char '#'
-            char 'x'
-            digits <- many1 hexDigit
-            return $ Number $ fst ( (readHex digits) !! 0 )
+            prefix <- oneOf "bodx"
+            let validDigits = case prefix of 
+                    'b' -> binDigits
+                    'o' -> octalDigits
+                    'd' -> decDigits
+                    'x' -> hexDigits
+            digits <- many1 (oneOf validDigits)
+            return $ case prefix of
+                        'b' -> 0 -- TODO
+                        'o' -> fst $ (readOct digits) !! 0
+                        'd' -> read digits
+                        'x' -> fst $ (readHex digits) !! 0
             
--- parse: user error (Pattern match failure in do expression at parse.hs:80:10-17)
--- Why?            
- 
-parseRawDec = do
+parseNum :: Parser Integer            
+-- Use 'do' to lift Parser String to Parser Integer
+parseNum = do   
             digits <- many1 digit
-            return $ Number $ read digits
+            return $ read digits
+     
+--  parseNumber :: Parser LispVal
+--  parseNumber = liftM (Number . read) $ many1 digit  
             
-parseNumber1 :: Parser LispVal
-parseNumber1 = parseHex
-            <|> parseRawDec
+parseNumber :: Parser LispVal
+parseNumber = do 
+        x <- parseNumPrefix <|> parseNum
+        return (Number x)
 
-
---  parseNumber2 :: Parser LispVal
---  parseNumber2 = many1 digit >>= \p -> return . (Number . read) $ p
                           
 parseExpr :: Parser LispVal
 parseExpr = parseAtom 
-        <|> parseNumber1
+        <|> parseNumber
         <|> parseString
  
 parserRunner :: Show a => Parser a -> String -> String -> String
