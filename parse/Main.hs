@@ -4,6 +4,7 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment 
 import Control.Monad
 import Numeric
+import Data.Char (digitToInt)
 
 
 data LispVal = Atom String
@@ -68,7 +69,7 @@ parseNumPrefix = do
                     'x' -> hexDigits
             digits <- many1 (oneOf validDigits)
             return $ case prefix of
-                        'b' -> 0 -- TODO
+                        'b' -> fst $ (readInt 2 (`elem` "01") digitToInt digits) !! 0
                         'o' -> fst $ (readOct digits) !! 0
                         'd' -> read digits
                         'x' -> fst $ (readHex digits) !! 0
