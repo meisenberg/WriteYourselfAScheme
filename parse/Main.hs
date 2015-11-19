@@ -13,6 +13,7 @@ data LispVal = Atom String
         | Number Integer
         | String String
         | Bool Bool
+        | Character Char
         deriving (Show)
              
 symbol :: Parser Char
@@ -87,13 +88,30 @@ parseNumber :: Parser LispVal
 parseNumber = do 
         x <- parseNumPrefix <|> parseNum
         return (Number x)
+                           
+parseCharacter :: Parser LispVal
+parseCharacter = parseLongChar <|> parseShortChar
 
-                          
+parseShortChar :: Parser LispVal 
+parseShortChar = do 
+                 string "#\\"
+                 x <- anyChar 
+                 return $ Character x
+
+parseLongChar :: Parser LispVal
+parseLongChar = do 
+                  string "#\\"
+                  x <- (string "space" <|> string "newline")
+                  case x of 
+                   "space" -> return $ Character ' '
+                   "newline" -> return $ Character '\n'
+     
 parseExpr :: Parser LispVal
 parseExpr = parseAtom 
         <|> parseNumber
         <|> parseString
- 
+        <|> parseCharacter
+        
 parserRunner :: Show a => Parser a -> String -> String -> String
 parserRunner parser label input = case parse parser label input of
         Left err -> "No match: " ++ show err

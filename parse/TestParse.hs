@@ -3,6 +3,16 @@ module TestSafePrelude where
 import Test.HUnit
 import Main hiding (main)
 
+testParseAtom :: Test
+testParseAtom = 
+    TestCase $ assertEqual "Should parse a simple atom"
+                           ("Found value: " ++ show (Atom "abc"))  (parserRunner parseAtom "lisp" "abc")
+
+testParseAtomFail :: Test
+testParseAtomFail = 
+    TestCase $ assertEqual "Should parse a single '#' character as an Atom"
+                           ("Found value: " ++ show (Atom "#"))  (parserRunner parseAtom "lisp" "#")
+
 testParseString :: Test
 testParseString = 
     TestCase $ assertEqual "Should parse a string with escaped slash character"
@@ -28,7 +38,19 @@ testParseNumBinary =
     TestCase $ assertEqual "Should parse a binary number with prefix"
                            ("Found value: " ++ show (Number 5))  (parserRunner parseNumber "lisp" "#b101")
 
+testParseSimpleCharacter :: Test
+testParseSimpleCharacter = 
+    TestCase $ assertEqual "Should parse a simple character object"
+                           ("Found value: " ++ show (Character 'a'))  (parserRunner parseCharacter "lisp" "#\\a")
+
+testParseCharacterName :: Test
+testParseCharacterName = 
+    TestCase $ assertEqual "Should parse a simple character object"
+                           ("Found value: " ++ show (Character ' '))  (parserRunner parseCharacter "lisp" "#\\space")
+
 main :: IO Counts
-main = runTestTT $ TestList [testParseString, testParseNum, testParseNumHex, testParseNumOct, testParseNumBinary]
+main = runTestTT $ TestList [testParseAtom, testParseAtomFail,
+        testParseString, testParseNum, testParseNumHex, testParseNumOct, testParseNumBinary,
+        testParseSimpleCharacter, testParseCharacterName]
 
 
