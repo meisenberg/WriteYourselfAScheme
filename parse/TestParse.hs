@@ -48,9 +48,20 @@ testParseCharacterName =
     TestCase $ assertEqual "Should parse a simple character object"
                            ("Found value: " ++ show (Character ' '))  (parserRunner parseCharacter "lisp" "#\\space")
 
+testUnpackNum = 
+    TestCase $ (do
+                    assertEqual "Unpack a Number" (123) (unpackNum $ Number 123)
+                    assertEqual "Unpack a numeric String" (123) (unpackNum $ String "123")
+                    assertEqual "Unpack a non-numeric String" (0) (unpackNum $ String "foo")
+                    assertEqual "Unpack a numeric List" (123) (unpackNum $ List [Number 123])
+                    assertEqual "Unpack something else" (0) (unpackNum $ Atom "foo")
+                    )
+                            
 main :: IO Counts
 main = runTestTT $ TestList [testParseAtom, testParseAtomFail,
         testParseString, testParseNum, testParseNumHex, testParseNumOct, testParseNumBinary,
-        testParseSimpleCharacter, testParseCharacterName]
+        --testParseSimpleCharacter, 
+        testParseCharacterName,
+        testUnpackNum]
 
 
