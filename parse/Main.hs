@@ -163,7 +163,11 @@ primitives = [("+", numericBinop (+)),
               ("/", numericBinop div),
               ("mod", numericBinop mod),
               ("quotient", numericBinop quot),
-              ("remainder", numericBinop rem)]
+              ("remainder", numericBinop rem),
+              ("string?", isString),
+              ("number?", isNumber),
+              ("symbol?", isSymbol)
+              ]
               
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
 numericBinop op params = Number $ foldl1 op $ map unpackNum params
@@ -177,6 +181,20 @@ unpackNum (String n) = let parsed = reads n :: [(Integer, String)] in
 unpackNum (List [n]) = unpackNum n
 unpackNum _ = 0
               
+isString :: [LispVal] -> LispVal
+isString params = case params of
+    [String x] -> Bool True 
+    _ -> Bool False              
+
+isNumber :: [LispVal] -> LispVal
+isNumber params = case params of
+    [Number x] -> Bool True 
+    _ -> Bool False
+
+isSymbol :: [LispVal] -> LispVal
+isSymbol params = case params of
+    [Atom x] -> Bool True 
+    _ -> Bool False                  
                                           
 parserRunner :: Show a => Parser a -> String -> String -> String
 parserRunner parser label input = case parse parser label input of
